@@ -67,28 +67,35 @@ Criar uma aplicação simples, organizada e escalável para:
 # Estrutura do Projeto
 
 ```txt
-sistema-escolar/
-│
-├── database/
-│   └── db.js
-│
-├── routes/
-│   └── alunosRoutes.js
-│
-├── controllers/
+sistema/
 │
 ├── public/
+|   ├── Components/
+|   |     ├── footer.html
+|   |     └──navbar.html
+|   |
 │   ├── css/
 │   │   └── style.css
 │   │
 │   ├── js/
-│   │   ├── api.js
-│   │   └── alunos.js
+│   │   ├── alunos.js
+|   |   ├── utils.js
+│   │   └── api.js
 │   │
 │   └── pages/
-│       └── alunos.html
+|       ├── alunos.html
+|       ├── dashboard.html
+│       └── login.html
 │
-├── app.js
+├── Server/
+|     ├── controllers/
+|     ├── database/
+|     |    └──db.js
+|     ├── models/
+|     ├── routes/
+|     |     └──alunosRoutes.js
+|     └── app.js
+│
 ├── package.json
 └── README.md
 ```
@@ -207,19 +214,6 @@ O projeto segue arquitetura baseada em:
 - modularização;
 - banco relacional;
 - rotas organizadas.
-
----
-
-# Melhorias Futuras
-
-- autenticação JWT;
-- login de professores;
-- dashboard;
-- gráficos;
-- relatórios PDF;
-- paginação;
-- filtros;
-- exportação Excel.
 
 ---
 
