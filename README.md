@@ -69,34 +69,34 @@ Criar uma aplicação simples, organizada e escalável para:
 ```txt
 sistema/
 │
-├── public/
-|   ├── Components/
-|   |     ├── footer.html
-|   |     └──navbar.html
-|   |
-│   ├── css/
+│── public/
+│   ├── Components/
+│   │     ├── footer.html
+│   │     └──navbar.html
+│   │
+│   │── css/
 │   │   └── style.css
 │   │
-│   ├── js/
+│   │── js/
 │   │   ├── alunos.js
-|   |   ├── utils.js
+│   │   ├── utils.js
 │   │   └── api.js
 │   │
 │   └── pages/
-|       ├── alunos.html
-|       ├── dashboard.html
+│       ├── alunos.html
+│       ├── dashboard.html
 │       └── login.html
 │
 ├── Server/
-|     ├── controllers/
-|     ├── database/
-|     |    └──db.js
-|     ├── models/
-|     ├── routes/
-|     |     └──alunosRoutes.js
-|     └── app.js
+│     ├── controllers/
+│     ├── database/
+│     │    └──db.js
+│     ├── models/
+│     ├── routes/
+│     │     └──alunosRoutes.js
+│     └── app.js
 │
-├── package.json
+│── package.json
 └── README.md
 ```
 
