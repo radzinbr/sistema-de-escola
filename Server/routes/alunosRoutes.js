@@ -38,28 +38,33 @@ router.get('/turma/:turmaId', (req, res) => {
 
 //Get listar todos os alunos
 router.get('/', (req, res) => {
+
     const sql = `
         SELECT 
             alunos.id,
             alunos.ra,
             alunos.nome,
-            alunos.data_nascimento
-        FROM alunos
+            alunos.data_nascimento,
+            turmas.nome AS turma
+            
+
+        FROM matriculas
+
+        JOIN alunos ON matriculas.aluno_id = alunos.id
+        JOIN turmas ON matriculas.turma_id = turmas.id
     `;
 
-    db.query(sql,(err,result) => {
-        if(err){
-            console.log(err);
+    db.query(sql, (err, results) => {
+
+        if (err) {
             return res.status(500).json({
                 erro: 'Erro ao buscar alunos'
             });
         }
-        res.json(result);
+
+        res.json(results);
     });
-
-
 });
-
 
 // POST - criar um novo aluno
 router.post('/', (req,res) => {
