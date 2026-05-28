@@ -156,7 +156,7 @@ git clone URL_DO_REPOSITORIO
 ## Entrar na pasta
 
 ```bash
-cd sistema-escolar
+cd Sua_pasta
 ```
 
 ## Instalar dependências
@@ -178,7 +178,7 @@ npx nodemon app.js
 Criar banco no MySQL:
 
 ```sql
-CREATE DATABASE sistema_escolar;
+CREATE DATABASE escola;
 ```
 
 Configurar conexão no arquivo:
