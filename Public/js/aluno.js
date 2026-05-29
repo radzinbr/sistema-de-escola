@@ -1,10 +1,18 @@
-import { getAlunos } from "./api.js";
+import {
+    getAlunos,
+    getTurmas
+} from "./api.js";
 
+let todosAlunos = [];
 let alunoIdArquivar = null;
 
 const formAluno =
     document.getElementById('form-aluno');
 
+
+// =========================
+// MODAL NOVO ALUNO
+// =========================
 
 function abrirModalNovoAluno() {
 
@@ -33,132 +41,214 @@ function abrirModalNovoAluno() {
 }
 
 
+
+
 // =========================
-// CADASTRAR ALUNO
+// CADASTRAR / EDITAR ALUNO
 // =========================
+
 formAluno.addEventListener(
     'submit',
     async (e) => {
 
         e.preventDefault();
 
-        const alunoId =
+        const btnSalvar =
             document.getElementById(
-                'aluno_id'
-            ).value;
-
-        const aluno = {
-
-            ra:
-                document.getElementById('ra').value,
-
-            nome:
-                document.getElementById('nome').value,
-
-            data_nascimento:
-                document.getElementById(
-                    'data_nascimento'
-                ).value,
-
-            turma_id:
-                document.getElementById(
-                    'turma_id'
-                ).value
-        };
-
-        // ====================
-        // EDITAR
-        // ====================
-
-        if (alunoId) {
-
-            const response = await fetch(
-                `http://localhost:3000/alunos/${alunoId}`,
-                {
-
-                    method: 'PUT',
-
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
-
-                    body: JSON.stringify(aluno)
-                }
+                'btn-salvar-aluno'
             );
 
-            const data =
-                await response.json();
+        btnSalvar.disabled = true;
+
+        btnSalvar.innerHTML = `
+    <span
+        class="spinner-border spinner-border-sm"
+    ></span>
+
+    Salvando...
+`;
+        try {
+
+            const alunoId =
+                document.getElementById(
+                    'aluno_id'
+                )?.value;
+
+            const aluno = {
+
+                ra:
+                    document.getElementById(
+                        'ra'
+                    ).value,
+
+                nome:
+                    document.getElementById(
+                        'nome'
+                    ).value,
+
+                data_nascimento:
+                    document.getElementById(
+                        'data_nascimento'
+                    ).value,
+
+                turma_id:
+                    document.getElementById(
+                        'turma_id'
+                    ).value
+            };
+
+            console.log(aluno);
+
+            let response;
+
+            // ====================
+            // EDITAR
+            // ====================
+
+            if (alunoId) {
+
+                response = await fetch(
+                    `http://localhost:3000/alunos/${alunoId}`,
+                    {
+
+                        method: 'PUT',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify(aluno)
+                    }
+                );
+            }
+
+            // ====================
+            // Novo aluno
+            // ====================
+
+            else {
+
+                response = await fetch(
+                    'http://localhost:3000/alunos',
+                    {
+
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify(aluno)
+                    }
+                );
+            }
+
+            console.log(response);
+
+            // pega texto primeiro
+            const texto =
+                await response.text();
+
+            console.log(texto);
+
+            // tenta converter json
+            let data = {};
+
+            try {
+
+                data = JSON.parse(texto);
+
+            }
+
+            catch {
+
+                throw new Error(
+                    'Resposta inválida do servidor'
+                );
+            }
 
             mostrarAlerta(
-                data.mensagem,
-                'warning'
+                data.mensagem || data.erro,
+
+                response.ok
+                    ? 'success'
+                    : 'danger'
             );
+
+            // sucesso
+            if (response.ok) {
+
+                carregarAlunos();
+
+                formAluno.reset();
+
+                const modalElement =
+                    document.getElementById(
+                        'modalAluno'
+                    );
+
+                const modal =
+                    bootstrap.Modal.getInstance(
+                        modalElement
+                    );
+
+                if (modal) {
+                    btnSalvar.disabled = false;
+
+                    btnSalvar.innerHTML = 'Salvar';
+                    modal.hide();
+                }
+
+                // limpa backdrop preso
+                document.body.classList.remove(
+                    'modal-open'
+                );
+
+                document
+                    .querySelectorAll(
+                        '.modal-backdrop'
+                    )
+                    .forEach(el => el.remove());
+            }
         }
 
-        // ====================
-        // NOVO
-        // ====================
+        catch (error) {
 
-        else {
-
-            const response = await fetch(
-                'http://localhost:3000/alunos',
-                {
-
-                    method: 'POST',
-
-                    headers: {
-                        'Content-Type':
-                            'application/json'
-                    },
-
-                    body: JSON.stringify(aluno)
-                }
-            );
-
-            const data =
-                await response.json();
+            console.log(error);
 
             mostrarAlerta(
-                data.mensagem,
-                'success'
+                error.message,
+                'danger'
             );
-        }
 
-        carregarAlunos();
+            // evita travamento do modal
+            document.body.classList.remove(
+                'modal-open'
+            );
 
-        formAluno.reset();
-
-        // limpa id
-        document.getElementById(
-            'aluno_id'
-        ).value = '';
-
-        // volta título
-        document.getElementById(
-            'titulo-modal-aluno'
-        ).innerText = 'Novo Aluno';
-
-        // fecha modal
-        const modal =
-            bootstrap.Modal.getInstance(
-                document.getElementById(
-                    'modalAluno'
+            document
+                .querySelectorAll(
+                    '.modal-backdrop'
                 )
-            );
-
-        modal.hide();
+                .forEach(el => el.remove());
+        }
     }
 );
-
 // =========================
 // LISTAR ALUNOS
 // =========================
 
 async function carregarAlunos() {
 
-    const alunos = await getAlunos();
+    todosAlunos = await getAlunos();
+
+    renderizarTabela(todosAlunos);
+}
+
+
+function renderizarTabela(alunos) {
 
     const tabela =
         document.getElementById(
@@ -187,14 +277,14 @@ async function carregarAlunos() {
                 <td>
 
                     <button
-    class="btn btn-warning btn-sm"
+                        class="btn btn-warning btn-sm"
 
-    onclick='abrirModalEditar(
-        ${JSON.stringify(aluno)}
-    )'
->
-    Editar
-</button>
+                        onclick='abrirModalEditar(
+                            ${JSON.stringify(aluno)}
+                        )'
+                    >
+                        Editar
+                    </button>
 
                     <button 
                         class="btn btn-danger btn-sm"
@@ -204,7 +294,7 @@ async function carregarAlunos() {
                             ${JSON.stringify(aluno.nome)}
                         )'
                     >
-                       excluir
+                        Excluir
                     </button>
 
                 </td>
@@ -216,9 +306,89 @@ async function carregarAlunos() {
     tabela.innerHTML = html;
 }
 
+document.getElementById(
+    'buscar-aluno'
+).addEventListener(
+    'input',
+    (e) => {
+
+        const busca =
+            e.target.value.toLowerCase();
+
+        const filtrados =
+            todosAlunos.filter(aluno => {
+
+                const nascimento =
+                    new Date(
+                        aluno.data_nascimento
+                    )
+                    .toLocaleDateString('pt-BR');
+
+                return (
+
+                    aluno.ra
+                        .toLowerCase()
+                        .includes(busca)
+
+                    ||
+
+                    aluno.nome
+                        .toLowerCase()
+                        .includes(busca)
+
+                    ||
+
+                    nascimento
+                        .includes(busca)
+
+                    ||
+
+                    aluno.turma
+                        .toLowerCase()
+                        .includes(busca)
+                );
+            });
+
+        renderizarTabela(filtrados);
+    }
+);
+
 
 // =========================
-// ABRIR MODAL ARQUIVAR
+// CARREGAR TURMAS
+// =========================
+
+async function carregarTurmas() {
+
+    const turmas =
+        await getTurmas();
+
+    const select =
+        document.getElementById(
+            'turma_id'
+        );
+
+    let html = `
+        <option value="">
+            Selecione
+        </option>
+    `;
+
+    turmas.forEach(turma => {
+
+        html += `
+            <option value="${turma.id}">
+                ${turma.nome} - ${turma.ano}
+            </option>
+        `;
+    });
+
+    select.innerHTML = html;
+}
+
+
+// =========================
+// MODAL ARQUIVAR
 // =========================
 
 function abrirModalArquivar(id, nome) {
@@ -229,28 +399,35 @@ function abrirModalArquivar(id, nome) {
         'nome-aluno-arquivar'
     ).innerText = nome;
 
-    const modal = new bootstrap.Modal(
-        document.getElementById(
-            'modalArquivar'
-        )
-    );
+    const modal =
+        new bootstrap.Modal(
+            document.getElementById(
+                'modalArquivar'
+            )
+        );
 
     modal.show();
 }
 
+
+// =========================
+// MODAL EDITAR
+// =========================
+
 function abrirModalEditar(aluno) {
 
-    // muda título
+    // título
     document.getElementById(
         'titulo-modal-aluno'
-    ).innerText = 'Editar Aluno';
+    ).innerText =
+        'Editar Aluno';
 
-    // preenche id oculto
+    // id oculto
     document.getElementById(
         'aluno_id'
     ).value = aluno.id;
 
-    // preenche formulário
+    // campos
     document.getElementById(
         'ra'
     ).value = aluno.ra;
@@ -267,7 +444,7 @@ function abrirModalEditar(aluno) {
     document.getElementById(
         'turma_id'
     ).value = aluno.turma_id;
-    
+
     // abre modal
     const modal =
         new bootstrap.Modal(
@@ -279,6 +456,7 @@ function abrirModalEditar(aluno) {
     modal.show();
 }
 
+
 // =========================
 // CONFIRMAR ARQUIVAMENTO
 // =========================
@@ -289,33 +467,97 @@ document.getElementById(
     'click',
     async () => {
 
-        const response = await fetch(
-            `http://localhost:3000/alunos/arquivar/${alunoIdArquivar}`,
-            {
-                method: 'PUT'
-            }
-        );
+        try {
 
-        const data =
-            await response.json();
-
-        mostrarAlerta(data.mensagem);
-
-        // atualiza tabela
-        carregarAlunos();
-
-        // fecha modal
-        const modal =
-            bootstrap.Modal.getInstance(
-                document.getElementById(
-                    'modalArquivar'
-                )
+            const response = await fetch(
+                `http://localhost:3000/alunos/arquivar/${alunoIdArquivar}`,
+                {
+                    method: 'PUT'
+                }
             );
 
-        modal.hide();
+            const data =
+                await response.json();
+
+            mostrarAlerta(
+                data.mensagem || data.erro,
+                response.ok
+                    ? 'success'
+                    : 'danger'
+            );
+
+            if (response.ok) {
+
+                carregarAlunos();
+
+                // fecha modal
+                const modal =
+                    bootstrap.Modal.getInstance(
+                        document.getElementById(
+                            'modalArquivar'
+                        )
+                    );
+
+                if (modal) {
+                    modal.hide();
+                }
+            }
+
+        }
+
+        catch (error) {
+
+            console.log(error);
+
+            mostrarAlerta(
+                'Erro ao arquivar aluno',
+                'danger'
+            );
+        }
     }
 );
 
+document.getElementById(
+    'ra'
+).addEventListener(
+    'input',
+    (e) => {
+
+        let valor =
+            e.target.value;
+
+        // remove caracteres inválidos
+        valor = valor.replace(
+            /[^0-9A-Za-z]/g,
+            ''
+        );
+
+        // números + dígito
+        if (valor.length > 9) {
+
+            valor =
+                valor.slice(0, 9)
+                + '-'
+                + valor.slice(9);
+        }
+
+        // adiciona espaço antes UF
+        if (valor.length > 11) {
+
+            valor =
+                valor.slice(0, 11)
+                + ' '
+                + valor.slice(11, 13)
+                    .toUpperCase();
+        }
+
+        e.target.value = valor;
+    }
+);
+
+// =========================
+// ALERTA BOOTSTRAP
+// =========================
 
 function mostrarAlerta(
     mensagem,
@@ -353,20 +595,24 @@ function mostrarAlerta(
     }, 3000);
 }
 
+
 // =========================
-// INICIALIZA TABELA
+// INICIALIZA
 // =========================
 
 carregarAlunos();
+carregarTurmas();
 
 
 // =========================
-// FUNÇÃO GLOBAL
+// FUNÇÕES GLOBAIS
 // =========================
 
 window.abrirModalNovoAluno =
     abrirModalNovoAluno;
+
 window.abrirModalEditar =
     abrirModalEditar;
+
 window.abrirModalArquivar =
-    abrirModalArquivar;
+    abrirModalArquivar; 

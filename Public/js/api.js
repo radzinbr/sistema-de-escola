@@ -13,7 +13,7 @@ async function request(endpoint, options = {}) {
 }
 
 export const getAlunos = () => request("/alunos");
-export const getTurmas = () => request("/turmas");
+
 
 export const criarAluno = (dados) =>
     request("/alunos", {
@@ -21,4 +21,11 @@ export const criarAluno = (dados) =>
         body: JSON.stringify(dados)
     });
 
-   
+   export async function getTurmas() {
+
+    const response = await fetch(
+        'http://localhost:3000/turmas'
+    );
+
+    return await response.json();
+}

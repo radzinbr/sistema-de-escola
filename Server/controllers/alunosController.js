@@ -92,7 +92,6 @@ exports.buscarPorTurma = (req, res) => {
 
 
 
-// CADASTRAR ALUNO
 exports.cadastrarAluno = (req, res) => {
 
     const {
@@ -102,46 +101,79 @@ exports.cadastrarAluno = (req, res) => {
         turma_id
     } = req.body;
 
-    // cria aluno
-    const sqlAluno = `
-        INSERT INTO alunos (
-            ra,
-            nome,
-            data_nascimento
-        )
-        VALUES (?, ?, ?)
+    // ======================
+    // VALIDA CAMPOS
+    // ======================
+
+    if (
+        !ra ||
+        !nome ||
+        !data_nascimento ||
+        !turma_id
+    ) {
+
+        return res.status(400).json({
+            erro:
+                'Preencha todos os campos'
+        });
+    }
+
+    // ======================
+    // VERIFICA RA
+    // ======================
+
+    const sqlVerificaRA = `
+        SELECT id
+        FROM alunos
+        WHERE ra = ?
     `;
 
     db.query(
-        sqlAluno,
-        [ra, nome, data_nascimento],
-        (err, result) => {
+        sqlVerificaRA,
+        [ra],
+        (err, results) => {
 
             if (err) {
 
                 console.log(err);
 
                 return res.status(500).json({
-                    erro: 'Erro ao cadastrar aluno'
+                    erro:
+                        'Erro ao validar RA'
                 });
             }
 
-            // pega id criado
-            const alunoId = result.insertId;
+            // RA já existe
+            if (results.length > 0) {
 
-            // cria matrícula
-            const sqlMatricula = `
-                INSERT INTO matriculas (
-                    aluno_id,
-                    turma_id
+                return res.status(400).json({
+                    erro:
+                        'RA já cadastrado'
+                });
+            }
+
+            // ======================
+            // CADASTRA ALUNO
+            // ======================
+
+            const sqlAluno = `
+                INSERT INTO alunos
+                (
+                    ra,
+                    nome,
+                    data_nascimento
                 )
-                VALUES (?, ?)
+                VALUES (?, ?, ?)
             `;
 
             db.query(
-                sqlMatricula,
-                [alunoId, turma_id],
-                (err) => {
+                sqlAluno,
+                [
+                    ra,
+                    nome,
+                    data_nascimento
+                ],
+                (err, result) => {
 
                     if (err) {
 
@@ -149,22 +181,55 @@ exports.cadastrarAluno = (req, res) => {
 
                         return res.status(500).json({
                             erro:
-                                'Erro ao matricular aluno'
+                                'Erro ao cadastrar aluno'
                         });
                     }
 
-                    res.status(201).json({
-                        mensagem:
-                            'Aluno cadastrado com sucesso'
-                    });
+                    const alunoId =
+                        result.insertId;
 
+                    // ======================
+                    // MATRÍCULA
+                    // ======================
+
+                    const sqlMatricula = `
+                        INSERT INTO matriculas
+                        (
+                            aluno_id,
+                            turma_id
+                        )
+                        VALUES (?, ?)
+                    `;
+
+                    db.query(
+                        sqlMatricula,
+                        [
+                            alunoId,
+                            turma_id
+                        ],
+                        (err) => {
+
+                            if (err) {
+
+                                console.log(err);
+
+                                return res.status(500).json({
+                                    erro:
+                                        'Erro ao criar matrícula'
+                                });
+                            }
+
+                            res.status(201).json({
+                                mensagem:
+                                    'Aluno cadastrado com sucesso'
+                            });
+                        }
+                    );
                 }
             );
         }
     );
 };
-
-
 // ATUALIZAR ALUNO
 exports.atualizarAluno = (req, res) => {
 
