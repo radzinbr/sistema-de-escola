@@ -35,9 +35,9 @@ router.put(
 
 
 // DELETE
-router.delete(
-    '/:id',
-    alunosController.removerAluno
+router.put(
+    '/arquivar/:id',
+    alunosController.arquivarAluno
 );
 
 

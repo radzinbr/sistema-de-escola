@@ -12,6 +12,7 @@ exports.listarAlunos = (req, res) => {
         alunos.ra,
         alunos.nome,
         alunos.data_nascimento,
+        turmas.id AS turma_id,
 
         CONCAT(
             turmas.nome,
@@ -172,10 +173,15 @@ exports.atualizarAluno = (req, res) => {
     const {
         ra,
         nome,
-        data_nascimento
+        data_nascimento,
+        turma_id
     } = req.body;
 
-    const sql = `
+    // ======================
+    // ATUALIZA ALUNO
+    // ======================
+
+    const sqlAluno = `
         UPDATE alunos
         SET
             ra = ?,
@@ -185,81 +191,92 @@ exports.atualizarAluno = (req, res) => {
     `;
 
     db.query(
-        sql,
+        sqlAluno,
         [
             ra,
             nome,
             data_nascimento,
             alunoId
         ],
-        (err, result) => {
-
-            if (err) {
-
-                return res.status(500).json({
-                    erro: 'Erro ao atualizar aluno'
-                });
-            }
-
-            res.json({
-                mensagem:
-                    'Aluno atualizado com sucesso'
-            });
-
-        }
-    );
-};
-
-
-
-// REMOVER ALUNO
-exports.removerAluno = (req, res) => {
-
-    const alunoId = req.params.id;
-
-    const deleteMatriculas = `
-        DELETE FROM matriculas
-        WHERE aluno_id = ?
-    `;
-
-    const deleteAluno = `
-        DELETE FROM alunos
-        WHERE id = ?
-    `;
-
-    db.query(
-        deleteMatriculas,
-        [alunoId],
         (err) => {
 
             if (err) {
 
+                console.log(err);
+
                 return res.status(500).json({
                     erro:
-                        'Erro ao remover matrícula'
+                        'Erro ao atualizar aluno'
                 });
             }
 
+            // ======================
+            // ATUALIZA MATRÍCULA
+            // ======================
+
+            const sqlMatricula = `
+                UPDATE matriculas
+                SET turma_id = ?
+                WHERE aluno_id = ?
+            `;
+
             db.query(
-                deleteAluno,
-                [alunoId],
+                sqlMatricula,
+                [
+                    turma_id,
+                    alunoId
+                ],
                 (err) => {
 
                     if (err) {
 
+                        console.log(err);
+
                         return res.status(500).json({
                             erro:
-                                'Erro ao remover aluno'
+                                'Erro ao atualizar turma'
                         });
                     }
 
                     res.json({
                         mensagem:
-                            'Aluno removido com sucesso'
+                            'Aluno atualizado com sucesso'
                     });
 
                 }
             );
+        }
+    );
+};
+
+
+exports.arquivarAluno = (req, res) => {
+
+    const alunoId = req.params.id;
+
+    const sql = `
+        UPDATE alunos
+        SET ativo = FALSE
+        WHERE id = ?
+    `;
+
+    db.query(
+        sql,
+        [alunoId],
+        (err, result) => {
+
+            if (err) {
+
+                return res.status(500).json({
+                    erro:
+                        'Erro ao arquivar aluno'
+                });
+            }
+
+            res.json({
+                mensagem:
+                    'Aluno Removido com sucesso'
+            });
 
         }
     );
