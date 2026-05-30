@@ -306,52 +306,69 @@ function renderizarTabela(alunos) {
     tabela.innerHTML = html;
 }
 
-document.getElementById(
-    'buscar-aluno'
-).addEventListener(
-    'input',
-    (e) => {
 
-        const busca =
-            e.target.value.toLowerCase();
+function aplicarFiltros() {
 
-        const filtrados =
-            todosAlunos.filter(aluno => {
+    const nome =
+        document.getElementById(
+            'filtro-nome'
+        ).value.toLowerCase();
 
-                const nascimento =
-                    new Date(
-                        aluno.data_nascimento
-                    )
-                    .toLocaleDateString('pt-BR');
+    const ra =
+        document.getElementById(
+            'filtro-ra'
+        ).value.toLowerCase();
 
-                return (
+    const ano =
+        document.getElementById(
+            'filtro-ano'
+        ).value;
 
-                    aluno.ra
-                        .toLowerCase()
-                        .includes(busca)
+    const turma =
+        document.getElementById(
+            'filtro-turma'
+        ).value.toLowerCase();
 
-                    ||
+    const filtrados =
+        todosAlunos.filter(aluno => {
 
-                    aluno.nome
-                        .toLowerCase()
-                        .includes(busca)
-
-                    ||
-
-                    nascimento
-                        .includes(busca)
-
-                    ||
-
-                    aluno.turma
-                        .toLowerCase()
-                        .includes(busca)
+            const data =
+                new Date(
+                    aluno.data_nascimento
                 );
-            });
 
-        renderizarTabela(filtrados);
-    }
-);
+            const anoNascimento =
+                data.getFullYear();
+
+            return (
+
+                aluno.nome
+                    .toLowerCase()
+                    .includes(nome)
+
+                &&
+
+                aluno.ra
+                    .toLowerCase()
+                    .includes(ra)
+
+                &&
+
+                (
+                    !ano ||
+                    anoNascimento == ano
+                )
+
+                &&
+
+                aluno.turma
+                    .toLowerCase()
+                    .includes(turma)
+            );
+        });
+
+    renderizarTabela(filtrados);
+}
 
 
 // =========================
@@ -596,13 +613,29 @@ function mostrarAlerta(
 }
 
 
+
+
 // =========================
 // INICIALIZA
 // =========================
 
+
+
+
 carregarAlunos();
 carregarTurmas();
 
+[
+    'filtro-nome',
+    'filtro-ra',
+    'filtro-ano',
+    'filtro-turma'
+].forEach(id => {
+    document.getElementById(id).addEventListener(
+        'input',
+        aplicarFiltros
+    );
+})
 
 // =========================
 // FUNÇÕES GLOBAIS

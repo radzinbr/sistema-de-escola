@@ -6,6 +6,10 @@ const alunosController =
 // LISTAR ALUNOS
 exports.listarAlunos = (req, res) => {
 
+
+    
+
+
     const sql = `
     SELECT 
         alunos.id,
