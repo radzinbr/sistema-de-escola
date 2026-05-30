@@ -33,6 +33,3 @@ body {
 .btn:hover {
     transform: translateY(-1px);
 }
-.table-responsive {
-    overflow-x: hidden;
-}

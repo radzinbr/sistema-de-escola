@@ -72,6 +72,7 @@ formAluno.addEventListener(
 
     Salvando...
 `;
+
         try {
 
             const alunoId =
@@ -206,10 +207,28 @@ formAluno.addEventListener(
                     modal.hide();
                 }
 
+
+
+                setTimeout(() => {
+
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+
+                    document
+                        .querySelectorAll('.modal-backdrop')
+                        .forEach(el => el.remove());
+
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+
+                }, 300);
                 // limpa backdrop preso
                 document.body.classList.remove(
                     'modal-open'
                 );
+
 
                 document
                     .querySelectorAll(
@@ -239,24 +258,11 @@ formAluno.addEventListener(
                 )
                 .forEach(el => el.remove());
         }
+        console.log("CHEGOU NO FINAL DO SUBMIT");
     }
 );
 
 
-async function carregarTotalPaginas() {
-
-    const response = await fetch(
-        'http://localhost:3000/alunos/total'
-    );
-
-    const data =
-        await response.json();
-
-    totalPaginas =
-        Math.ceil(
-            data.total / limite
-        );
-}
 
 
 
@@ -268,6 +274,7 @@ async function carregarAlunos() {
     todosAlunos = await getAlunos();
 
     renderizarTabela(todosAlunos);
+
 }
 
 
@@ -540,6 +547,7 @@ document.getElementById(
 
                 if (modal) {
                     modal.hide();
+
                 }
             }
 
