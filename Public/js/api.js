@@ -12,7 +12,14 @@ async function request(endpoint, options = {}) {
     return response.json();
 }
 
-export const getAlunos = () => request("/alunos");
+export async function getAlunos() {
+
+    const response = await fetch(
+        'http://localhost:3000/alunos'
+    );
+
+    return await response.json();
+}
 
 
 export const criarAluno = (dados) =>

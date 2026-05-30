@@ -4,7 +4,12 @@ import {
 } from "./api.js";
 
 let todosAlunos = [];
-let alunoIdArquivar = null;
+let alunoIdArquivar = null
+let paginaAtual = 1;
+const limite = 10;
+
+let totalPaginas = 1;
+
 
 const formAluno =
     document.getElementById('form-aluno');
@@ -236,10 +241,28 @@ formAluno.addEventListener(
         }
     }
 );
+
+
+async function carregarTotalPaginas() {
+
+    const response = await fetch(
+        'http://localhost:3000/alunos/total'
+    );
+
+    const data =
+        await response.json();
+
+    totalPaginas =
+        Math.ceil(
+            data.total / limite
+        );
+}
+
+
+
 // =========================
 // LISTAR ALUNOS
 // =========================
-
 async function carregarAlunos() {
 
     todosAlunos = await getAlunos();
@@ -268,8 +291,8 @@ function renderizarTabela(alunos) {
 
                 <td>
                     ${new Date(
-                        aluno.data_nascimento
-                    ).toLocaleDateString('pt-BR')}
+            aluno.data_nascimento
+        ).toLocaleDateString('pt-BR')}
                 </td>
 
                 <td>${aluno.turma}</td>
@@ -622,7 +645,11 @@ function mostrarAlerta(
 
 
 
+
 carregarAlunos();
+
+
+
 carregarTurmas();
 
 [
@@ -636,6 +663,7 @@ carregarTurmas();
         aplicarFiltros
     );
 })
+
 
 // =========================
 // FUNÇÕES GLOBAIS

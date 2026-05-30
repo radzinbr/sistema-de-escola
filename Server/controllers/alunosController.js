@@ -3,54 +3,77 @@ const db = require('../database/db');
 const alunosController =
     require('../controllers/alunosController');
 
-// LISTAR ALUNOS
-exports.listarAlunos = (req, res) => {
-
-
-    
-
+    exports.totalAlunos = (req, res) => {
 
     const sql = `
-    SELECT 
-        alunos.id,
-        alunos.ra,
-        alunos.nome,
-        alunos.data_nascimento,
-        turmas.id AS turma_id,
+        SELECT COUNT(*) AS total
+        FROM alunos
+        WHERE ativo = TRUE
+    `;
 
-        CONCAT(
-            turmas.nome,
-            ' - ',
-            turmas.ano
-        ) AS turma
-
-    FROM matriculas
-
-    JOIN alunos
-        ON matriculas.aluno_id = alunos.id
-
-    JOIN turmas
-        ON matriculas.turma_id = turmas.id
-
-    WHERE alunos.ativo = TRUE
-`;
-
-    db.query(sql, (err, results) => {
+    db.query(sql, (err, result) => {
 
         if (err) {
 
-            console.log(err);
-
-            return res.status(500).json({
-                erro: 'Erro ao buscar alunos'
-            });
+            return res.status(500).json(err);
         }
 
-        res.json(results);
+        res.json(result[0]);
     });
 };
+// LISTAR ALUNOS
+exports.listarAlunos = (req, res) => {
 
+    const page =
+        parseInt(req.query.page) || 1;
 
+    const limit =
+        parseInt(req.query.limit) || 10;
+
+    const offset =
+        (page - 1) * limit;
+
+    const sql = `
+        SELECT
+            alunos.id,
+            alunos.ra,
+            alunos.nome,
+            alunos.data_nascimento,
+
+            turmas.id AS turma_id,
+
+            CONCAT(
+                turmas.nome,
+                ' - ',
+                turmas.ano
+            ) AS turma
+
+        FROM matriculas
+
+        JOIN alunos
+            ON matriculas.aluno_id = alunos.id
+
+        JOIN turmas
+            ON matriculas.turma_id = turmas.id
+
+        
+        WHERE alunos.ativo = TRUE
+    `;
+
+    db.query(
+        sql,
+        [limit, offset],
+        (err, alunos) => {
+
+            if (err) {
+
+                return res.status(500).json(err);
+            }
+
+            res.json(alunos);
+        }
+    );
+};
 
 // BUSCAR ALUNOS POR TURMA
 exports.buscarPorTurma = (req, res) => {

@@ -33,7 +33,10 @@ router.put(
     alunosController.atualizarAluno
 );
 
-
+router.get(
+    '/total',
+    alunosController.totalAlunos
+);
 
 
 // DELETE
